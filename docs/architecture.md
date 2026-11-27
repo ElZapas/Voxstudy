@@ -28,7 +28,9 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 | Módulo | Responsabilidad |
 | --- | --- |
 | `cli.py` | Argumentos y salida para el usuario. |
-| `ui/app.py` | Aplicación Textual y pantalla inicial. |
+| `ui/app.py` | Aplicación Textual y navegación de pantallas. |
+| `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
+| `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |
 | `models.py` | Modelos de configuración, captura y segmentos. |
 | `workflow.py` | Coordinación de casos de uso. |
@@ -46,3 +48,4 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 - Las guías son optativas y se generan bajo demanda.
 - Las notas de transcripción y las guías son archivos independientes para preservar la fuente original.
 - La clave de TokenHarbor se lee desde `.env` o una variable de entorno; no forma parte de la configuración ni debe incluirse en el repositorio.
+- La interfaz consume consultas de `application/`; las pantallas no inspeccionan directamente la bóveda.

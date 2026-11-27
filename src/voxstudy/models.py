@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -92,3 +93,13 @@ class GuideResult:
     model: str
     usage: dict[str, Any]
     transcript_characters: int
+
+
+@dataclass(frozen=True)
+class VaultNote:
+    """A VoxStudy note discovered in the Obsidian vault."""
+
+    path: Path
+    title: str
+    note_type: str
+    modified_at: datetime

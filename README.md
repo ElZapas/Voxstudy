@@ -32,7 +32,7 @@ La configuración local queda en `~/.config/voxstudy/config.json`. De forma pred
 
 ## Capturar y transcribir
 
-Ejecuta `voxstudy` sin argumentos para abrir la interfaz interactiva en la terminal. Por ahora muestra una pantalla inicial; el panel y sus acciones se añadirán en los siguientes pasos. Los subcomandos siguen disponibles para uso directo.
+Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Muestra la bóveda configurada, el estado de captura, las cinco notas recientes y permite actualizar con `r` o salir con `q`. La navegación a las vistas de biblioteca y ajustes se añadirá en siguientes pasos. Los subcomandos siguen disponibles para uso directo.
 
 Inicia la captura antes de reproducir el video:
 
@@ -76,7 +76,8 @@ La generación de guías es explícita: `voxstudy stop` solo captura, transcribe
 ## Estructura
 
 - `src/voxstudy/cli.py`: interfaz de línea de comandos.
-- `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual.
+- `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual; `screens/dashboard.py` muestra la bóveda, el estado de captura y las notas recientes.
+- `src/voxstudy/application/`: consultas y casos de uso compartidos por las interfaces.
 - `src/voxstudy/workflow.py`: coordinación de captura, transcripción y guías.
 - `src/voxstudy/adapters/`: integraciones con captura de audio, Voxtype, DeepSeek y Obsidian.
 - `src/voxstudy/markdown.py`: formato de las notas.

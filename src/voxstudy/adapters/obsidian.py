@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ..config import VoxStudyError
 from ..markdown import render_study_guide, render_transcript, slugify
-from ..models import AppConfig, CaptureSession
+from ..models import AppConfig, CaptureSession, VaultNote
 
 
 def transcript_body(path: Path) -> str:
@@ -44,6 +44,33 @@ def select_transcript(config: AppConfig, requested: str | None) -> Path:
     if not candidates:
         raise VoxStudyError(f"No hay transcripciones en {folder}")
     return max(candidates, key=lambda path: path.stat().st_mtime)
+
+
+def list_recent_notes(config: AppConfig, limit: int = 5) -> list[VaultNote]:
+    """List recent VoxStudy transcript and guide notes in the configured vault."""
+    notes: list[VaultNote] = []
+    for folder in (config.transcript_folder, config.guide_folder):
+        directory = config.vault / folder
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("*.md"):
+            try:
+                preview = path.read_text(encoding="utf-8", errors="replace")[:4000]
+                modified = datetime.fromtimestamp(path.stat().st_mtime).astimezone()
+            except OSError:
+                continue
+            type_match = re.search(r"(?m)^type:\s*(transcription|study-guide)\s*$", preview)
+            if type_match is None:
+                continue
+            title_match = re.search(r"(?m)^#\s+(.+?)\s*$", preview)
+            notes.append(VaultNote(
+                path=path,
+                title=title_match.group(1) if title_match else path.stem,
+                note_type=type_match.group(1),
+                modified_at=modified,
+            ))
+    notes.sort(key=lambda note: note.modified_at, reverse=True)
+    return notes[:max(0, limit)]
 
 
 def _unique_path(folder: Path, filename: str) -> Path:
