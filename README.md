@@ -48,12 +48,17 @@ Consulta el estado de una captura o transcripción pendiente con `voxstudy statu
 
 ## Crear una guía de estudio
 
-La guía usa DeepSeek Flash. Define `DEEPSEEK_API_KEY` en el entorno antes de ejecutarla; no guardes la clave en el repositorio. Por ejemplo, Bash solicita la clave sin mostrarla ni incluirla en el historial:
+La guía usa el modelo `deepseek-v4.1-flash:free` a través de la API compatible con OpenAI de TokenHarbor. Crea un archivo `.env` local a partir de la plantilla y añade allí tu clave nueva:
 
 ```bash
-read -rsp "DeepSeek API key: " DEEPSEEK_API_KEY; printf '\n'; export DEEPSEEK_API_KEY
+cp .env.example .env
+nvim .env
+```
+
+El archivo `.env` está excluido de Git. No publiques ni compartas su contenido. También puedes exportar `TOKENHARBOR_API_KEY` en el entorno. Luego ejecuta:
+
+```bash
 voxstudy guide
-unset DEEPSEEK_API_KEY
 ```
 
 Sin argumento, se procesa la transcripción más reciente. Para elegir una nota:
@@ -62,7 +67,7 @@ Sin argumento, se procesa la transcripción más reciente. Para elegir una nota:
 voxstudy guide 2026-11-26-2202-prueba.md
 ```
 
-La guía se guarda por separado, enlaza a la transcripción original y registra los tokens de entrada y salida informados por DeepSeek. Incluye resumen, objetivos de aprendizaje, esquema temático, términos clave, relaciones entre ideas, preguntas de práctica y fragmentos dudosos para revisar. Los errores de reconocimiento de nombres propios pueden afectar el resultado; las marcas de tiempo ayudan a comprobarlos en la fuente.
+La guía se guarda por separado, enlaza a la transcripción original y registra los tokens de entrada y salida informados por TokenHarbor. Incluye resumen, objetivos de aprendizaje, esquema temático, términos clave, relaciones entre ideas, preguntas de práctica y fragmentos dudosos para revisar. Los errores de reconocimiento de nombres propios pueden afectar el resultado; las marcas de tiempo ayudan a comprobarlos en la fuente.
 
 La generación de guías es explícita: `voxstudy stop` solo captura, transcribe y guarda la nota. Para usar otra variante de modelo compatible, indica `--model` al comando `guide`.
 

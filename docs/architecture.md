@@ -17,11 +17,11 @@ Si el procesamiento se interrumpe, `status` muestra el progreso y una nueva ejec
 
 1. `workflow.py` selecciona una transcripción, por defecto la más reciente.
 2. `adapters/obsidian.py` lee el cuerpo de la nota y excluye el frontmatter.
-3. `adapters/deepseek.py` envía el texto a la API de DeepSeek usando `DEEPSEEK_API_KEY` del entorno y solicita una respuesta JSON estructurada.
+3. `adapters/deepseek.py` envía el texto a la API compatible con OpenAI de TokenHarbor usando `TOKENHARBOR_API_KEY` desde `.env` o el entorno, y solicita una respuesta JSON estructurada en el prompt.
 4. `markdown.py` presenta la respuesta como una guía de estudio con enlaces a la transcripción original.
 5. `adapters/obsidian.py` guarda la guía en su propia carpeta dentro de la bóveda.
 
-La transcripción se mantiene local durante la captura. La generación de guía es una acción separada y comparte el texto con DeepSeek; no envía el audio.
+La transcripción se mantiene local durante la captura. La generación de guía es una acción separada y comparte el texto con TokenHarbor; no envía el audio.
 
 ## Módulos
 
@@ -33,7 +33,7 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 | `workflow.py` | Coordinación de casos de uso. |
 | `adapters/audio_capture.py` | Monitor de audio, FFmpeg y división en bloques. |
 | `adapters/voxtype.py` | Comprobación e invocación de Voxtype local. |
-| `adapters/deepseek.py` | Petición API y validación básica de la respuesta estructurada. |
+| `adapters/deepseek.py` | Petición compatible con OpenAI a TokenHarbor y validación básica de la respuesta estructurada. |
 | `adapters/obsidian.py` | Lectura y escritura de notas en la bóveda. |
 | `markdown.py` | Renderizado Markdown de transcripciones y guías. |
 
@@ -44,4 +44,4 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 - Los bloques de transcripción duran 30 segundos y se conservan como referencias temporales.
 - Las guías son optativas y se generan bajo demanda.
 - Las notas de transcripción y las guías son archivos independientes para preservar la fuente original.
-- La clave de DeepSeek solo se lee desde una variable de entorno; no forma parte de la configuración ni del repositorio.
+- La clave de TokenHarbor se lee desde `.env` o una variable de entorno; no forma parte de la configuración ni debe incluirse en el repositorio.
