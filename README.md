@@ -1,6 +1,6 @@
 # VoxStudy
 
-VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y guarda la transcripción en una bóveda de Obsidian. Después puede enviar esa transcripción a DeepSeek para crear una guía de estudio con temas, términos clave, preguntas de práctica y marcas de tiempo.
+VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y guarda la transcripción en una bóveda de Obsidian. Puede enviar esa transcripción a TokenHarbor para crear una guía de estudio con temas, términos clave, preguntas de práctica y marcas de tiempo.
 
 ## Requisitos
 
@@ -10,7 +10,7 @@ VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y gu
 - FFmpeg con entrada PulseAudio
 - Una bóveda de Obsidian
 
-La captura usa el monitor de salida predeterminado y excluye el micrófono. El audio se transcribe localmente y se elimina después de guardar la nota. La guía requiere conexión y una clave de API de DeepSeek; solo se envía el texto de la transcripción.
+La captura usa el monitor de salida predeterminado y excluye el micrófono. El audio se transcribe localmente y se elimina después de guardar la nota. La guía requiere conexión y una clave de API de TokenHarbor; solo se envía el texto de la transcripción.
 
 ## Instalación
 
@@ -31,6 +31,8 @@ voxstudy setup --vault /home/greep/Documents/Obsidian/MDY
 La configuración local queda en `~/.config/voxstudy/config.json`. De forma predeterminada, las transcripciones se guardan en `Transcripciones/` y las guías en `Guías de estudio/`.
 
 ## Capturar y transcribir
+
+Ejecuta `voxstudy` sin argumentos para abrir la interfaz interactiva en la terminal. Por ahora muestra una pantalla inicial; el panel y sus acciones se añadirán en los siguientes pasos. Los subcomandos siguen disponibles para uso directo.
 
 Inicia la captura antes de reproducir el video:
 
@@ -74,6 +76,7 @@ La generación de guías es explícita: `voxstudy stop` solo captura, transcribe
 ## Estructura
 
 - `src/voxstudy/cli.py`: interfaz de línea de comandos.
+- `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual.
 - `src/voxstudy/workflow.py`: coordinación de captura, transcripción y guías.
 - `src/voxstudy/adapters/`: integraciones con captura de audio, Voxtype, DeepSeek y Obsidian.
 - `src/voxstudy/markdown.py`: formato de las notas.

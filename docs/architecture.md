@@ -1,6 +1,6 @@
 # Arquitectura
 
-VoxStudy separa la interfaz de comandos, los flujos de trabajo, el formato de notas y los adaptadores externos. La configuración y el estado de una captura viven en el directorio del usuario (`~/.config/voxstudy`), mientras que las notas terminadas van a la bóveda indicada.
+VoxStudy separa las interfaces de usuario, los flujos de trabajo, el formato de notas y los adaptadores externos. `cli.py` mantiene los subcomandos de terminal y abre la aplicación Textual cuando se ejecuta `voxstudy` sin argumentos. La configuración y el estado de una captura viven en el directorio del usuario (`~/.config/voxstudy`), mientras que las notas terminadas van a la bóveda indicada.
 
 ## Flujo de transcripción
 
@@ -28,6 +28,7 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 | Módulo | Responsabilidad |
 | --- | --- |
 | `cli.py` | Argumentos y salida para el usuario. |
+| `ui/app.py` | Aplicación Textual y pantalla inicial. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |
 | `models.py` | Modelos de configuración, captura y segmentos. |
 | `workflow.py` | Coordinación de casos de uso. |

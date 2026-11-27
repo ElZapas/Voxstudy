@@ -13,7 +13,7 @@ from .workflow import create_guide, setup, start, status, stop
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Transcribe system audio with Voxtype and create Obsidian notes.")
-    commands = parser.add_subparsers(dest="command", required=True)
+    commands = parser.add_subparsers(dest="command")
 
     setup_parser = commands.add_parser("setup", help="Configure the Obsidian vault.")
     setup_parser.add_argument("--vault", default=str(DEFAULT_VAULT), help="Path to the vault.")
@@ -34,7 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     try:
-        if args.command == "setup":
+        if args.command is None:
+            from .ui.app import VoxStudyApp
+
+            VoxStudyApp().run()
+        elif args.command == "setup":
             config = setup(args.vault, args.folder, args.guide_folder)
             print("Configuración guardada.")
             print(f"Transcripciones: {config.vault / config.transcript_folder}")
