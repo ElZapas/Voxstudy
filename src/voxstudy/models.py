@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -57,3 +58,37 @@ class CaptureSession:
         value["audio_path"] = str(self.audio_path)
         value["log_path"] = str(self.log_path)
         return value
+
+
+@dataclass(frozen=True)
+class WorkflowProgress:
+    """Progress emitted by a long-running application workflow."""
+
+    stage: str
+    current: int = 0
+    total: int = 0
+    message: str = ""
+
+
+@dataclass(frozen=True)
+class CaptureStatus:
+    """Current capture/transcription state, or an empty state when idle."""
+
+    session: CaptureSession | None
+    completed_chunks: int = 0
+    total_chunks: int = 0
+
+
+@dataclass(frozen=True)
+class TranscriptionResult:
+    note_path: Path
+    completed_chunks: int
+    monitor: str
+
+
+@dataclass(frozen=True)
+class GuideResult:
+    note_path: Path
+    model: str
+    usage: dict[str, Any]
+    transcript_characters: int
