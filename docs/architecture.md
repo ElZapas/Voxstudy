@@ -23,6 +23,10 @@ Si el procesamiento se interrumpe, `status` muestra el progreso y una nueva ejec
 
 La transcripción se mantiene local durante la captura. La generación de guía es una acción separada y comparte el texto con TokenHarbor; no envía el audio.
 
+## Operaciones desde la TUI
+
+Las operaciones síncronas de captura, transcripción y generación de guías se ejecutan en workers de hilo de Textual para que la interfaz permanezca receptiva. Los callbacks de `workflow.py` publican mensajes de progreso; los widgets se actualizan en el hilo principal. Al terminar, la pantalla muestra el resultado o el error y actualiza su estado.
+
 ## Módulos
 
 | Módulo | Responsabilidad |
@@ -32,6 +36,7 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 | `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
 | `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
 | `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |
+| `ui/messages.py` | Mensajes de progreso y fin de operación enviados desde workers. |
 | `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
 | `application/library.py` | Búsqueda, lectura y apertura de notas seleccionadas. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |

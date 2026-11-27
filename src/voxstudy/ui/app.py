@@ -10,6 +10,7 @@ class VoxStudyApp(App[None]):
     """Interactive terminal entry point for VoxStudy."""
 
     TITLE = "VoxStudy"
+    AUTO_FOCUS = None
     DEFAULT_MODE = "main"
     MODES = {"main": "dashboard"}
     SCREENS = {"dashboard": DashboardScreen, "library": LibraryScreen}

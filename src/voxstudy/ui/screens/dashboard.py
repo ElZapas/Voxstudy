@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import DataTable, Footer, Header, Static
+from textual.widgets import Button, DataTable, Footer, Header, Input, Static
 
 from ...application.dashboard import DashboardData, load_dashboard_data
+from ...config import VoxStudyError
+from ...models import CaptureSession, TranscriptionResult, WorkflowProgress
+from ...workflow import start, stop
+from ..messages import WorkflowFinishedMessage, WorkflowProgressMessage
 
 
 class DashboardScreen(Screen[None]):
@@ -54,6 +59,26 @@ class DashboardScreen(Screen[None]):
         height: 1fr;
     }
 
+    #capture-controls {
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    #capture-title {
+        width: 1fr;
+        margin-right: 1;
+    }
+
+    #start-capture, #stop-capture {
+        margin-right: 1;
+    }
+
+    #operation-status {
+        height: auto;
+        margin-bottom: 1;
+        color: $text-muted;
+    }
+
     #hint {
         height: auto;
         margin-top: 1;
@@ -67,14 +92,52 @@ class DashboardScreen(Screen[None]):
             with Horizontal(id="status-row"):
                 yield Static(id="vault-status", classes="status-card")
                 yield Static(id="capture-status", classes="status-card")
+            with Horizontal(id="capture-controls"):
+                yield Input(placeholder="Título del video", id="capture-title")
+                yield Button("Iniciar captura", id="start-capture", variant="success")
+                yield Button("Detener y transcribir", id="stop-capture", variant="warning")
+            yield Static("", id="operation-status")
             yield Static("Notas recientes", id="recent-title")
             yield DataTable(id="recent-notes", zebra_stripes=True)
             yield Static("l: biblioteca · r: actualizar · q: salir", id="hint")
         yield Footer()
 
     def on_mount(self) -> None:
+        self._active_operation: str | None = None
         table = self.query_one("#recent-notes", DataTable)
         table.add_columns("Tipo", "Nota", "Modificada")
+        self.refresh_data()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "start-capture":
+            title = self.query_one("#capture-title", Input).value.strip() or "Video sin título"
+            self._begin_operation("capture-start", "Iniciando captura de audio del sistema…")
+            self._start_capture_worker(title)
+        elif event.button.id == "stop-capture":
+            self._begin_operation("transcription", "Deteniendo captura y preparando la transcripción…")
+            self._stop_capture_worker()
+
+    def on_workflow_progress_message(self, event: WorkflowProgressMessage) -> None:
+        if event.operation != self._active_operation:
+            return
+        self.query_one("#operation-status", Static).update(event.progress.message)
+
+    def on_workflow_finished_message(self, event: WorkflowFinishedMessage) -> None:
+        if event.operation != self._active_operation:
+            return
+        self._active_operation = None
+        self._set_controls_enabled(True)
+        status = self.query_one("#operation-status", Static)
+        if event.error:
+            status.update(f"[red]{event.error}[/red]")
+            self.notify(event.error, severity="error", timeout=8)
+            self.refresh_data()
+            return
+        if event.operation == "capture-start" and isinstance(event.result, CaptureSession):
+            status.update(f"Capturando: {event.result.title}")
+        elif event.operation == "transcription" and isinstance(event.result, TranscriptionResult):
+            status.update(f"Transcripción guardada: {event.result.note_path.name}")
+            self.notify("Transcripción completada", timeout=4)
         self.refresh_data()
 
     def action_refresh(self) -> None:
@@ -86,6 +149,37 @@ class DashboardScreen(Screen[None]):
 
     def action_quit(self) -> None:
         self.app.exit()
+
+    def _begin_operation(self, operation: str, message: str) -> None:
+        self._active_operation = operation
+        self._set_controls_enabled(False)
+        self.query_one("#operation-status", Static).update(message)
+
+    def _set_controls_enabled(self, enabled: bool) -> None:
+        self.query_one("#start-capture", Button).disabled = not enabled
+        self.query_one("#stop-capture", Button).disabled = not enabled
+        self.query_one("#capture-title", Input).disabled = not enabled
+
+    @work(thread=True, group="voxstudy-workflow", exclusive=True, exit_on_error=False)
+    def _start_capture_worker(self, title: str) -> None:
+        try:
+            result = start(title)
+        except Exception as exc:
+            self.post_message(WorkflowFinishedMessage("capture-start", error=str(exc)))
+        else:
+            self.post_message(WorkflowFinishedMessage("capture-start", result=result))
+
+    @work(thread=True, group="voxstudy-workflow", exclusive=True, exit_on_error=False)
+    def _stop_capture_worker(self) -> None:
+        def report(progress: WorkflowProgress) -> None:
+            self.post_message(WorkflowProgressMessage("transcription", progress))
+
+        try:
+            result = stop(report)
+        except Exception as exc:
+            self.post_message(WorkflowFinishedMessage("transcription", error=str(exc)))
+        else:
+            self.post_message(WorkflowFinishedMessage("transcription", result=result))
 
     def refresh_data(self) -> None:
         data = load_dashboard_data()
@@ -124,6 +218,12 @@ class DashboardScreen(Screen[None]):
             capture_widget.update(
                 f"[b]Captura[/b]\n{description}\nVideo: {session.title}"
             )
+
+        has_session = data.capture is not None and data.capture.session is not None
+        busy = self._active_operation is not None
+        self.query_one("#start-capture", Button).disabled = busy or has_session
+        self.query_one("#stop-capture", Button).disabled = busy or not has_session
+        self.query_one("#capture-title", Input).disabled = busy or has_session
 
     def _render_recent_notes(self, data: DashboardData) -> None:
         table = self.query_one("#recent-notes", DataTable)

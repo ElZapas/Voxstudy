@@ -68,6 +68,7 @@ class LibraryScreen(Screen[None]):
         table = self.query_one("#library-notes", DataTable)
         table.add_columns("Tipo", "Nota", "Modificada")
         self.refresh_notes()
+        self.query_one("#note-search", Input).focus()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "note-search":

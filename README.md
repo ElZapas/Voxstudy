@@ -32,7 +32,7 @@ La configuración local queda en `~/.config/voxstudy/config.json`. De forma pred
 
 ## Capturar y transcribir
 
-Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Muestra la bóveda configurada, el estado de captura, las cinco notas recientes y permite actualizar con `r` o salir con `q`. La navegación a las vistas de biblioteca y ajustes se añadirá en siguientes pasos. Los subcomandos siguen disponibles para uso directo.
+Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Muestra la bóveda configurada, el estado de captura y las cinco notas recientes. Pulsa `l` para buscar en la biblioteca; desde una transcripción puedes generar una guía con `g`. En el panel, escribe el título y usa **Iniciar captura** antes de reproducir el video; al terminar, usa **Detener y transcribir**. El panel muestra el progreso por bloques y permanece disponible mientras trabaja. Pulsa `r` para actualizar o `q` para salir. Los subcomandos siguen disponibles para uso directo.
 
 Inicia la captura antes de reproducir el video:
 
