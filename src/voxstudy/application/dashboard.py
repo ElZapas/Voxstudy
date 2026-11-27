@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..adapters.obsidian import list_recent_notes
+from ..adapters.obsidian import list_vault_notes
 from ..config import VoxStudyError, load_config
 from ..models import AppConfig, CaptureStatus, VaultNote
 from ..workflow import status
@@ -35,7 +35,7 @@ def load_dashboard_data(note_limit: int = 5) -> DashboardData:
         capture = None
         capture_error = str(exc)
 
-    recent_notes = list_recent_notes(config, note_limit) if config is not None else []
+    recent_notes = list_vault_notes(config, note_limit) if config is not None else []
     return DashboardData(
         config=config,
         configuration_error=configuration_error,

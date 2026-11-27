@@ -3,6 +3,7 @@
 from textual.app import App
 
 from .screens.dashboard import DashboardScreen
+from .screens.library import LibraryScreen
 
 
 class VoxStudyApp(App[None]):
@@ -11,4 +12,4 @@ class VoxStudyApp(App[None]):
     TITLE = "VoxStudy"
     DEFAULT_MODE = "main"
     MODES = {"main": "dashboard"}
-    SCREENS = {"dashboard": DashboardScreen}
+    SCREENS = {"dashboard": DashboardScreen, "library": LibraryScreen}

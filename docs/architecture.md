@@ -30,7 +30,10 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 | `cli.py` | Argumentos y salida para el usuario. |
 | `ui/app.py` | Aplicación Textual y navegación de pantallas. |
 | `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
+| `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
+| `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |
 | `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
+| `application/library.py` | Búsqueda, lectura y apertura de notas seleccionadas. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |
 | `models.py` | Modelos de configuración, captura y segmentos. |
 | `workflow.py` | Coordinación de casos de uso. |

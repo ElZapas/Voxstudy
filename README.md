@@ -76,7 +76,7 @@ La generación de guías es explícita: `voxstudy stop` solo captura, transcribe
 ## Estructura
 
 - `src/voxstudy/cli.py`: interfaz de línea de comandos.
-- `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual; `screens/dashboard.py` muestra la bóveda, el estado de captura y las notas recientes.
+- `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual; contiene el panel, la biblioteca y las vistas de nota.
 - `src/voxstudy/application/`: consultas y casos de uso compartidos por las interfaces.
 - `src/voxstudy/workflow.py`: coordinación de captura, transcripción y guías.
 - `src/voxstudy/adapters/`: integraciones con captura de audio, Voxtype, DeepSeek y Obsidian.

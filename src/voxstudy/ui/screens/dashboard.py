@@ -15,6 +15,7 @@ class DashboardScreen(Screen[None]):
     """Show setup/capture status and the latest Obsidian notes."""
 
     BINDINGS = [
+        Binding("l", "library", "Biblioteca", show=True),
         Binding("r", "refresh", "Actualizar", show=True),
         Binding("q", "quit", "Salir", show=True),
     ]
@@ -68,7 +69,7 @@ class DashboardScreen(Screen[None]):
                 yield Static(id="capture-status", classes="status-card")
             yield Static("Notas recientes", id="recent-title")
             yield DataTable(id="recent-notes", zebra_stripes=True)
-            yield Static("r: actualizar · q: salir", id="hint")
+            yield Static("l: biblioteca · r: actualizar · q: salir", id="hint")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -79,6 +80,9 @@ class DashboardScreen(Screen[None]):
     def action_refresh(self) -> None:
         self.refresh_data()
         self.notify("Panel actualizado", timeout=2)
+
+    async def action_library(self) -> None:
+        await self.app.push_screen("library")
 
     def action_quit(self) -> None:
         self.app.exit()

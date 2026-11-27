@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
 from ..config import VoxStudyError
 from ..markdown import render_study_guide, render_transcript, slugify
@@ -46,8 +48,8 @@ def select_transcript(config: AppConfig, requested: str | None) -> Path:
     return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
-def list_recent_notes(config: AppConfig, limit: int = 5) -> list[VaultNote]:
-    """List recent VoxStudy transcript and guide notes in the configured vault."""
+def list_vault_notes(config: AppConfig, limit: int | None = 5) -> list[VaultNote]:
+    """List VoxStudy transcript and guide notes, newest first."""
     notes: list[VaultNote] = []
     for folder in (config.transcript_folder, config.guide_folder):
         directory = config.vault / folder
@@ -70,7 +72,31 @@ def list_recent_notes(config: AppConfig, limit: int = 5) -> list[VaultNote]:
                 modified_at=modified,
             ))
     notes.sort(key=lambda note: note.modified_at, reverse=True)
-    return notes[:max(0, limit)]
+    return notes if limit is None else notes[:max(0, limit)]
+
+
+def open_note_in_obsidian(config: AppConfig, path: Path) -> None:
+    """Open a note through Obsidian's URI handler."""
+    resolved = path.expanduser().resolve()
+    try:
+        relative = resolved.relative_to(config.vault.resolve())
+    except ValueError as exc:
+        raise VoxStudyError("La nota debe estar dentro de la bóveda configurada.") from exc
+    if not resolved.is_file() or resolved.suffix.lower() != ".md":
+        raise VoxStudyError(f"No encuentro la nota Markdown: {resolved}")
+    uri = "obsidian://open?" + urlencode({
+        "vault": config.vault.name,
+        "file": relative.as_posix(),
+    })
+    try:
+        subprocess.Popen(
+            ["xdg-open", uri],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError as exc:
+        raise VoxStudyError(f"No pude abrir Obsidian: {exc}") from exc
 
 
 def _unique_path(folder: Path, filename: str) -> Path:
