@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+
+# Captured or converted media
+*.wav
+*.opus
+*.mp3
+*.flac
+recordings/
+chunks-*/
+
+# Local runtime output
+*.log
+.state/
+state/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
