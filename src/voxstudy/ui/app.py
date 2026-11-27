@@ -1,6 +1,7 @@
 """Textual application shell and screen routing."""
 
 from textual.app import App
+from textual.screen import Screen
 
 from .screens.dashboard import DashboardScreen
 from .screens.library import LibraryScreen
@@ -11,6 +12,7 @@ class VoxStudyApp(App[None]):
 
     TITLE = "VoxStudy"
     AUTO_FOCUS = None
-    DEFAULT_MODE = "main"
-    MODES = {"main": "dashboard"}
-    SCREENS = {"dashboard": DashboardScreen, "library": LibraryScreen}
+    SCREENS = {"library": LibraryScreen}
+
+    def get_default_screen(self) -> Screen:
+        return DashboardScreen()

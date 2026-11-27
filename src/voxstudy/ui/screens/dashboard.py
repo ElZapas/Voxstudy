@@ -65,8 +65,12 @@ class DashboardScreen(Screen[None]):
     }
 
     #capture-title {
-        width: 1fr;
-        margin-right: 1;
+        width: 100%;
+        margin-bottom: 1;
+    }
+
+    #capture-buttons {
+        height: auto;
     }
 
     #start-capture, #stop-capture {
@@ -92,10 +96,11 @@ class DashboardScreen(Screen[None]):
             with Horizontal(id="status-row"):
                 yield Static(id="vault-status", classes="status-card")
                 yield Static(id="capture-status", classes="status-card")
-            with Horizontal(id="capture-controls"):
+            with Vertical(id="capture-controls"):
                 yield Input(placeholder="Título del video", id="capture-title")
-                yield Button("Iniciar captura", id="start-capture", variant="success")
-                yield Button("Detener y transcribir", id="stop-capture", variant="warning")
+                with Horizontal(id="capture-buttons"):
+                    yield Button("Iniciar captura", id="start-capture", variant="success")
+                    yield Button("Detener y transcribir", id="stop-capture", variant="warning")
             yield Static("", id="operation-status")
             yield Static("Notas recientes", id="recent-title")
             yield DataTable(id="recent-notes", zebra_stripes=True)
