@@ -27,6 +27,8 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 
 Las operaciones síncronas de captura, transcripción y generación de guías se ejecutan en workers de hilo de Textual para que la interfaz permanezca receptiva. Los callbacks de `workflow.py` publican mensajes de progreso; los widgets se actualizan en el hilo principal. Al terminar, la pantalla muestra el resultado o el error y actualiza su estado.
 
+`ui/widgets/navbar.py` proporciona la barra de marca y navegación compartida por el panel, la biblioteca y las vistas de nota. `ui/app.py` coordina el cambio de pantallas y la acción de actualizar la vista actual. Las pantallas consumen las consultas de `application/` y no acceden directamente a la bóveda.
+
 ## Módulos
 
 | Módulo | Responsabilidad |
@@ -34,6 +36,7 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | `cli.py` | Argumentos y salida para el usuario. |
 | `ui/app.py` | Aplicación Textual, tema predeterminado y navegación de pantallas. |
 | `ui/theme.py` | Paleta Aether basada en los colores locales de Omarchy. |
+| `ui/widgets/navbar.py` | Barra de marca y navegación compartida entre pantallas. |
 | `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
 | `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
 | `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |

@@ -30,9 +30,30 @@ voxstudy setup --vault /home/greep/Documents/Obsidian/MDY
 
 La configuración local queda en `~/.config/voxstudy/config.json`. De forma predeterminada, las transcripciones se guardan en `Transcripciones/` y las guías en `Guías de estudio/`.
 
-## Capturar y transcribir
+## Interfaz de terminal
 
-Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Usa por defecto la paleta Aether/Omarchy activa en el sistema. Muestra la bóveda configurada, el estado de captura y las cinco notas recientes. Pulsa `l` para buscar en la biblioteca; desde una transcripción puedes generar una guía con `g`. En el panel, escribe el título y usa **Iniciar captura** antes de reproducir el video; al terminar, usa **Detener y transcribir**. El panel muestra el progreso por bloques y permanece disponible mientras trabaja. Pulsa `r` para actualizar o `q` para salir. Los subcomandos siguen disponibles para uso directo.
+Ejecuta `voxstudy` sin argumentos para abrir la interfaz interactiva (TUI) en la terminal. La barra superior de VoxStudy está disponible en el panel, la biblioteca y las vistas de notas. El tema predeterminado usa la paleta Aether/Omarchy.
+
+| Vista | Contenido |
+| --- | --- |
+| Panel | Estado de la bóveda y captura, controles para iniciar/detener y cinco notas recientes. |
+| Biblioteca | Búsqueda de transcripciones y guías; selecciona una nota para abrir su contenido. |
+| Nota | Vista de transcripción o guía; desde una transcripción puedes generar la guía y abrir la nota en Obsidian. |
+
+La barra superior permite volver al panel, abrir la biblioteca, actualizar la vista o salir. Atajos disponibles:
+
+| Tecla | Acción |
+| --- | --- |
+| `l` | Abrir la biblioteca desde el panel. |
+| `r` | Actualizar el panel. |
+| `g` | Generar una guía desde una transcripción. |
+| `o` | Abrir la nota actual en Obsidian. |
+| `Esc` | Volver a la vista anterior desde biblioteca o nota. |
+| `q` | Salir desde el panel. |
+
+En el panel, escribe el título y usa **Iniciar captura** antes de reproducir el video; al terminar, usa **Detener y transcribir**. La interfaz muestra el progreso por bloques y permanece disponible mientras trabaja. Los subcomandos siguen disponibles para uso directo.
+
+Para mostrar una TUI en GitHub sirven dos formatos complementarios: capturas estáticas de las vistas principales y una grabación breve de la navegación. Textual puede exportar la pantalla como SVG, que conserva con nitidez el texto y los bordes; una grabación en asciinema puede mostrar el flujo interactivo. Se pueden guardar en `docs/images/` y enlazar desde aquí cuando estén listas.
 
 Inicia la captura antes de reproducir el video:
 
