@@ -69,7 +69,7 @@ def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, di
             message = json.loads(detail).get("error", {}).get("message", detail)
         except json.JSONDecodeError:
             message = detail
-        raise VoxStudyError(f"DeepSeek devolvió HTTP {exc.code}: {message}") from exc
+        raise VoxStudyError(f"TokenHarbor devolvió HTTP {exc.code}: {message}") from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         raise VoxStudyError(f"No pude conectar con DeepSeek: {exc}") from exc
     except json.JSONDecodeError as exc:
