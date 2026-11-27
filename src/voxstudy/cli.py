@@ -25,7 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("stop", help="Stop capture, transcribe, and save a note.")
     commands.add_parser("status", help="Show capture or transcription status.")
 
-    guide_parser = commands.add_parser("guide", help="Create a study guide with TokenHarbor.")
+    guide_parser = commands.add_parser("guide", help="Create a study guide with DeepSeek.")
     guide_parser.add_argument("transcript", nargs="?", help="Transcript note; defaults to the most recent one.")
     guide_parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Provider model (default: {DEFAULT_MODEL}).")
     return parser

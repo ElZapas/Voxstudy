@@ -1,6 +1,6 @@
 # VoxStudy
 
-VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y guarda la transcripción en una bóveda de Obsidian. Puede enviar esa transcripción a TokenHarbor para crear una guía de estudio con temas, términos clave, preguntas de práctica y marcas de tiempo.
+VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y guarda la transcripción en una bóveda de Obsidian. Puede enviar esa transcripción a DeepSeek para crear una guía de estudio con temas, términos clave, preguntas de práctica y marcas de tiempo.
 
 ## Requisitos
 
@@ -10,7 +10,7 @@ VoxStudy captura el audio del sistema, lo transcribe localmente con Voxtype y gu
 - FFmpeg con entrada PulseAudio
 - Una bóveda de Obsidian
 
-La captura usa el monitor de salida predeterminado y excluye el micrófono. El audio se transcribe localmente y se elimina después de guardar la nota. La guía requiere conexión y una clave de API de TokenHarbor; solo se envía el texto de la transcripción.
+La captura usa el monitor de salida predeterminado y excluye el micrófono. El audio se transcribe localmente y se elimina después de guardar la nota. La guía requiere conexión y una clave de API de DeepSeek; solo se envía el texto de la transcripción.
 
 ## Instalación
 
@@ -50,14 +50,14 @@ Consulta el estado de una captura o transcripción pendiente con `voxstudy statu
 
 ## Crear una guía de estudio
 
-La guía usa el modelo `deepseek-v4.1-flash:free` a través de la API compatible con OpenAI de TokenHarbor. Crea un archivo `.env` local a partir de la plantilla y añade allí tu clave nueva:
+La guía usa `deepseek-flash` mediante la API oficial de DeepSeek. Crea una clave en [DeepSeek Platform](https://platform.deepseek.com/) y añádela a un archivo `.env` local a partir de la plantilla:
 
 ```bash
 cp .env.example .env
 nvim .env
 ```
 
-El archivo `.env` está excluido de Git. No publiques ni compartas su contenido. También puedes exportar `TOKENHARBOR_API_KEY` en el entorno. Luego ejecuta:
+El archivo `.env` está excluido de Git. No publiques ni compartas su contenido. También puedes exportar `DEEPSEEK_API_KEY` en el entorno. Luego ejecuta:
 
 ```bash
 voxstudy guide
@@ -69,7 +69,7 @@ Sin argumento, se procesa la transcripción más reciente. Para elegir una nota:
 voxstudy guide 2026-11-26-2202-prueba.md
 ```
 
-La guía se guarda por separado, enlaza a la transcripción original y registra los tokens de entrada y salida informados por TokenHarbor. Incluye resumen, objetivos de aprendizaje, esquema temático, términos clave, relaciones entre ideas, preguntas de práctica y fragmentos dudosos para revisar. Los errores de reconocimiento de nombres propios pueden afectar el resultado; las marcas de tiempo ayudan a comprobarlos en la fuente.
+La guía se guarda por separado, enlaza a la transcripción original y registra los tokens de entrada y salida informados por DeepSeek. Incluye resumen, objetivos de aprendizaje, esquema temático, términos clave, relaciones entre ideas, preguntas de práctica y fragmentos dudosos para revisar. Los errores de reconocimiento de nombres propios pueden afectar el resultado; las marcas de tiempo ayudan a comprobarlos en la fuente.
 
 La generación de guías es explícita: `voxstudy stop` solo captura, transcribe y guarda la nota. Para usar otra variante de modelo compatible, indica `--model` al comando `guide`.
 

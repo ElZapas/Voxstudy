@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 from ..config import VoxStudyError
 
 
-API_URL = "https://tokenharbor.ai/v1/chat/completions"
-DEFAULT_MODEL = "deepseek-v4.1-flash:free"
+API_URL = "https://api.deepseek.com/chat/completions"
+DEFAULT_MODEL = "deepseek-flash"
 
 SYSTEM_PROMPT = """Eres un asistente que convierte transcripciones en guías de estudio fieles a la fuente.
 La transcripción puede contener errores de reconocimiento de voz: no conviertas una palabra dudosa en un hecho seguro. No añadas información externa ni inventes definiciones. Si algo no se entiende, indícalo en `review_notes` con su marca temporal.
@@ -35,10 +35,10 @@ Usa listas vacías cuando una sección no tenga elementos sustentados. Escribe e
 
 def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, dict]:
     load_dotenv()
-    api_key = os.environ.get("TOKENHARBOR_API_KEY", "").strip()
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
         raise VoxStudyError(
-            "Falta TOKENHARBOR_API_KEY. Configúrala en .env o en el entorno y vuelve a ejecutar 'voxstudy guide'."
+            "Falta DEEPSEEK_API_KEY. Configúrala en .env o en el entorno y vuelve a ejecutar 'voxstudy guide'."
         )
     body = {
         "model": model,
@@ -69,7 +69,7 @@ def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, di
             message = json.loads(detail).get("error", {}).get("message", detail)
         except json.JSONDecodeError:
             message = detail
-        raise VoxStudyError(f"TokenHarbor devolvió HTTP {exc.code}: {message}") from exc
+        raise VoxStudyError(f"DeepSeek devolvió HTTP {exc.code}: {message}") from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         raise VoxStudyError(f"No pude conectar con DeepSeek: {exc}") from exc
     except json.JSONDecodeError as exc:
