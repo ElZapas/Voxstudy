@@ -32,7 +32,7 @@ La configuración local queda en `~/.config/voxstudy/config.json`. De forma pred
 
 ## Capturar y transcribir
 
-Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Muestra la bóveda configurada, el estado de captura y las cinco notas recientes. Pulsa `l` para buscar en la biblioteca; desde una transcripción puedes generar una guía con `g`. En el panel, escribe el título y usa **Iniciar captura** antes de reproducir el video; al terminar, usa **Detener y transcribir**. El panel muestra el progreso por bloques y permanece disponible mientras trabaja. Pulsa `r` para actualizar o `q` para salir. Los subcomandos siguen disponibles para uso directo.
+Ejecuta `voxstudy` sin argumentos para abrir el panel interactivo en la terminal. Usa por defecto la paleta Aether/Omarchy activa en el sistema. Muestra la bóveda configurada, el estado de captura y las cinco notas recientes. Pulsa `l` para buscar en la biblioteca; desde una transcripción puedes generar una guía con `g`. En el panel, escribe el título y usa **Iniciar captura** antes de reproducir el video; al terminar, usa **Detener y transcribir**. El panel muestra el progreso por bloques y permanece disponible mientras trabaja. Pulsa `r` para actualizar o `q` para salir. Los subcomandos siguen disponibles para uso directo.
 
 Inicia la captura antes de reproducir el video:
 
@@ -77,6 +77,7 @@ La generación de guías es explícita: `voxstudy stop` solo captura, transcribe
 
 - `src/voxstudy/cli.py`: interfaz de línea de comandos.
 - `src/voxstudy/ui/`: interfaz interactiva en terminal basada en Textual; contiene el panel, la biblioteca y las vistas de nota.
+- `src/voxstudy/ui/theme.py`: paleta Aether/Omarchy usada por defecto.
 - `src/voxstudy/application/`: consultas y casos de uso compartidos por las interfaces.
 - `src/voxstudy/workflow.py`: coordinación de captura, transcripción y guías.
 - `src/voxstudy/adapters/`: integraciones con captura de audio, Voxtype, DeepSeek y Obsidian.

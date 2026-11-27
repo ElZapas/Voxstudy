@@ -9,13 +9,14 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical, VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Markdown, Static
+from textual.widgets import Button, Footer, Markdown, Static
 
 from ...application.library import load_note_detail, open_library_note
 from ...config import VoxStudyError
 from ...models import GuideResult, WorkflowProgress
 from ...workflow import create_guide
 from ..messages import WorkflowFinishedMessage, WorkflowProgressMessage
+from ..widgets.navbar import AppNavbar
 
 
 class NoteDetailScreen(Screen[None]):
@@ -44,14 +45,14 @@ class NoteDetailScreen(Screen[None]):
 
     #detail-meta {
         height: auto;
-        color: $text-muted;
+        color: $foreground-muted;
         margin-bottom: 1;
     }
 
     #operation-status {
         height: auto;
         margin-bottom: 1;
-        color: $text-muted;
+        color: $foreground-muted;
     }
 
     #note-scroll {
@@ -67,7 +68,7 @@ class NoteDetailScreen(Screen[None]):
         self._guide_running = False
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield AppNavbar(active_page="library")
         with Vertical(id="detail-body"):
             yield Static(self.NOTE_KIND, id="detail-title")
             yield Static(id="detail-meta")
@@ -79,11 +80,13 @@ class NoteDetailScreen(Screen[None]):
         yield Footer()
 
     async def on_mount(self) -> None:
+        self.refresh_view()
+
+    def refresh_view(self) -> None:
         try:
             detail = load_note_detail(self.note_path)
         except (VoxStudyError, OSError) as exc:
             self.notify(str(exc), severity="error", timeout=6)
-            await self.app.pop_screen()
             return
         self.query_one("#detail-title", Static).update(detail.note.title)
         self.query_one("#detail-meta", Static).update(

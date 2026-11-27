@@ -7,13 +7,14 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, DataTable, Footer, Header, Input, Static
+from textual.widgets import Button, DataTable, Footer, Input, Static
 
 from ...application.dashboard import DashboardData, load_dashboard_data
 from ...config import VoxStudyError
 from ...models import CaptureSession, TranscriptionResult, WorkflowProgress
 from ...workflow import start, stop
 from ..messages import WorkflowFinishedMessage, WorkflowProgressMessage
+from ..widgets.navbar import AppNavbar
 
 
 class DashboardScreen(Screen[None]):
@@ -32,79 +33,98 @@ class DashboardScreen(Screen[None]):
 
     #dashboard-body {
         height: 1fr;
-        padding: 1 2;
+        padding: 0 2;
+        overflow-y: auto;
     }
 
     #status-row {
         height: auto;
-        margin-bottom: 1;
+        margin: 0 0 1 0;
     }
 
     .status-card {
         width: 1fr;
         height: auto;
         min-height: 5;
-        padding: 1;
+        padding: 0 1;
         margin-right: 1;
-        border: round $accent;
+        border: heavy $muted;
+        background: $surface;
     }
 
-    #recent-title {
+    .status-wide {
+        width: 2fr;
+    }
+
+    .section-title {
         height: 1;
-        margin: 1 0;
+        margin-bottom: 0;
+        color: $accent;
         text-style: bold;
+    }
+
+    #capture-controls {
+        height: auto;
+        padding: 0 1;
+        border: double $accent;
+        background: $surface;
+    }
+
+    #capture-title {
+        width: 100%;
+        margin-bottom: 0;
+        background: $panel;
+        border: round $muted;
+    }
+
+    #capture-buttons {
+        height: 1;
+    }
+
+    #start-capture, #stop-capture {
+        height: 1;
+        min-height: 1;
+        margin: 0 1 0 0;
+        padding: 0 1;
+        border: none;
+    }
+
+    #operation-status {
+        display: none;
+        height: auto;
+        color: $foreground-muted;
+    }
+
+    #recent-panel {
+        height: 1fr;
+        min-height: 5;
+        margin-top: 1;
+        padding: 0 1;
+        border: heavy $muted;
+        background: $surface;
     }
 
     #recent-notes {
         height: 1fr;
     }
-
-    #capture-controls {
-        height: auto;
-        margin-bottom: 1;
-    }
-
-    #capture-title {
-        width: 100%;
-        margin-bottom: 1;
-    }
-
-    #capture-buttons {
-        height: auto;
-    }
-
-    #start-capture, #stop-capture {
-        margin-right: 1;
-    }
-
-    #operation-status {
-        height: auto;
-        margin-bottom: 1;
-        color: $text-muted;
-    }
-
-    #hint {
-        height: auto;
-        margin-top: 1;
-        color: $text-muted;
-    }
     """
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield AppNavbar(active_page="dashboard")
         with Vertical(id="dashboard-body"):
             with Horizontal(id="status-row"):
-                yield Static(id="vault-status", classes="status-card")
+                yield Static(id="vault-status", classes="status-card status-wide")
                 yield Static(id="capture-status", classes="status-card")
             with Vertical(id="capture-controls"):
+                yield Static("CAPTURA DE AUDIO", classes="section-title")
                 yield Input(placeholder="Título del video", id="capture-title")
                 with Horizontal(id="capture-buttons"):
                     yield Button("Iniciar captura", id="start-capture", variant="success")
                     yield Button("Detener y transcribir", id="stop-capture", variant="warning")
-            yield Static("", id="operation-status")
-            yield Static("Notas recientes", id="recent-title")
-            yield DataTable(id="recent-notes", zebra_stripes=True)
-            yield Static("l: biblioteca · r: actualizar · q: salir", id="hint")
+                yield Static("", id="operation-status")
+            with Vertical(id="recent-panel"):
+                yield Static("NOTAS RECIENTES", classes="section-title")
+                yield DataTable(id="recent-notes", zebra_stripes=True)
         yield Footer()
 
     def on_mount(self) -> None:
@@ -113,7 +133,7 @@ class DashboardScreen(Screen[None]):
         table.add_columns("Tipo", "Nota", "Modificada")
         self.refresh_data()
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "start-capture":
             title = self.query_one("#capture-title", Input).value.strip() or "Video sin título"
             self._begin_operation("capture-start", "Iniciando captura de audio del sistema…")
@@ -125,7 +145,9 @@ class DashboardScreen(Screen[None]):
     def on_workflow_progress_message(self, event: WorkflowProgressMessage) -> None:
         if event.operation != self._active_operation:
             return
-        self.query_one("#operation-status", Static).update(event.progress.message)
+        status = self.query_one("#operation-status", Static)
+        status.display = True
+        status.update(event.progress.message)
 
     def on_workflow_finished_message(self, event: WorkflowFinishedMessage) -> None:
         if event.operation != self._active_operation:
@@ -133,6 +155,7 @@ class DashboardScreen(Screen[None]):
         self._active_operation = None
         self._set_controls_enabled(True)
         status = self.query_one("#operation-status", Static)
+        status.display = True
         if event.error:
             status.update(f"[red]{event.error}[/red]")
             self.notify(event.error, severity="error", timeout=8)
@@ -146,11 +169,14 @@ class DashboardScreen(Screen[None]):
         self.refresh_data()
 
     def action_refresh(self) -> None:
-        self.refresh_data()
+        self.refresh_view()
         self.notify("Panel actualizado", timeout=2)
 
+    def refresh_view(self) -> None:
+        self.refresh_data()
+
     async def action_library(self) -> None:
-        await self.app.push_screen("library")
+        await self.app.show_library()
 
     def action_quit(self) -> None:
         self.app.exit()
@@ -158,7 +184,9 @@ class DashboardScreen(Screen[None]):
     def _begin_operation(self, operation: str, message: str) -> None:
         self._active_operation = operation
         self._set_controls_enabled(False)
-        self.query_one("#operation-status", Static).update(message)
+        status = self.query_one("#operation-status", Static)
+        status.display = True
+        status.update(message)
 
     def _set_controls_enabled(self, enabled: bool) -> None:
         self.query_one("#start-capture", Button).disabled = not enabled
@@ -202,8 +230,7 @@ class DashboardScreen(Screen[None]):
             vault_widget.update(
                 "[b]Bóveda[/b]\n"
                 f"{data.config.vault}\n"
-                f"Transcripciones: {data.config.transcript_folder}\n"
-                f"Guías: {data.config.guide_folder}"
+                f"{data.config.transcript_folder} · {data.config.guide_folder}"
             )
 
         capture_widget = self.query_one("#capture-status", Static)
@@ -219,7 +246,7 @@ class DashboardScreen(Screen[None]):
                     f"{data.capture.total_chunks} bloques"
                 )
             else:
-                description = f"Capturando audio del sistema ({session.monitor})"
+                description = "Capturando audio del sistema"
             capture_widget.update(
                 f"[b]Captura[/b]\n{description}\nVideo: {session.title}"
             )

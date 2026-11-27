@@ -6,13 +6,14 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.screen import Screen
-from textual.widgets import DataTable, Footer, Header, Input, Static
+from textual.widgets import DataTable, Footer, Input, Static
 
 from ...application.library import list_library_notes
 from ...config import VoxStudyError
 from ...models import VaultNote
 from .study_guide import StudyGuideDetailScreen
 from .transcript import TranscriptDetailScreen
+from ..widgets.navbar import AppNavbar
 
 
 class LibraryScreen(Screen[None]):
@@ -27,27 +28,41 @@ class LibraryScreen(Screen[None]):
 
     #library-body {
         height: 1fr;
-        padding: 1 2;
+        padding: 1 2 0 2;
+        overflow-y: auto;
+    }
+
+    #library-panel {
+        height: 1fr;
+        min-height: 8;
+        padding: 1;
+        border: heavy $muted;
+        background: $surface;
     }
 
     #library-title {
         height: 1;
+        color: $accent;
         text-style: bold;
-        margin-bottom: 1;
+        margin-bottom: 0;
     }
 
     #note-search {
         margin-bottom: 1;
+        background: $panel;
+        border: round $muted;
     }
 
     #library-notes {
         height: 1fr;
+        border: heavy $muted;
+        background: $background;
     }
 
     #library-hint {
         height: auto;
         margin-top: 1;
-        color: $text-muted;
+        color: $muted;
     }
     """
 
@@ -56,12 +71,13 @@ class LibraryScreen(Screen[None]):
         self._notes_by_path: dict[str, VaultNote] = {}
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield AppNavbar(active_page="library")
         with Vertical(id="library-body"):
-            yield Static("Biblioteca de VoxStudy", id="library-title")
-            yield Input(placeholder="Buscar por título…", id="note-search")
-            yield DataTable(id="library-notes", cursor_type="row", zebra_stripes=True)
-            yield Static("↑/↓: seleccionar · Enter: ver nota · Esc: volver", id="library-hint")
+            with Vertical(id="library-panel"):
+                yield Static("BIBLIOTECA DE ESTUDIO", id="library-title")
+                yield Input(placeholder="Buscar por título…", id="note-search")
+                yield DataTable(id="library-notes", cursor_type="row", zebra_stripes=True)
+                yield Static("↑/↓: seleccionar · Enter: ver nota · Esc: volver", id="library-hint")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -111,3 +127,6 @@ class LibraryScreen(Screen[None]):
                 note.modified_at.strftime("%Y-%m-%d %H:%M"),
                 key=str(note.path),
             )
+
+    def refresh_view(self) -> None:
+        self.refresh_notes(self.query_one("#note-search", Input).value)

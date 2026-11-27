@@ -32,7 +32,8 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | Módulo | Responsabilidad |
 | --- | --- |
 | `cli.py` | Argumentos y salida para el usuario. |
-| `ui/app.py` | Aplicación Textual y navegación de pantallas. |
+| `ui/app.py` | Aplicación Textual, tema predeterminado y navegación de pantallas. |
+| `ui/theme.py` | Paleta Aether basada en los colores locales de Omarchy. |
 | `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
 | `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
 | `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |
