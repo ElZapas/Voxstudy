@@ -9,7 +9,7 @@ from typing import Callable
 from .adapters.audio_capture import start_capture, split_audio, stop_capture
 from .adapters.deepseek import DEFAULT_MODEL, request_guide
 from .adapters.obsidian import save_study_guide, save_transcript, select_transcript, transcript_body
-from .adapters.voxtype import require_local_whisper, transcribe_chunk
+from .adapters.voxtype import clean_transcription_text, require_local_whisper, transcribe_chunk
 from .config import (
     RECORDINGS_DIR,
     VoxStudyError,
@@ -123,7 +123,7 @@ def create_guide(
     """Generate a study guide and return its path and provider usage."""
     config = load_config()
     source_note = select_transcript(config, requested_transcript)
-    transcript = transcript_body(source_note)
+    transcript = clean_transcription_text(transcript_body(source_note))
     _report_progress(on_progress, WorkflowProgress(
         stage="guide_generation_started",
         message=f"Enviando {len(transcript)} caracteres a {model}.",

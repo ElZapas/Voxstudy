@@ -7,7 +7,7 @@ VoxStudy separa las interfaces de usuario, los flujos de trabajo, el formato de 
 1. `cli.py` recibe `setup`, `start`, `stop` o `status`.
 2. `workflow.py` coordina la operación y comprueba la configuración y la sesión.
 3. `adapters/audio_capture.py` obtiene el monitor de salida predeterminado y captura con FFmpeg; no captura el micrófono.
-4. Al detener, el audio se divide en bloques de 30 segundos. `adapters/voxtype.py` invoca Voxtype con Whisper local para cada bloque.
+4. Al detener, el audio se divide en bloques de 30 segundos. `adapters/voxtype.py` invoca Voxtype con Whisper local para cada bloque, extrae la línea con el texto reconocido y descarta logs de diagnóstico y códigos de color.
 5. El progreso y los segmentos quedan en el estado local mientras se procesa. `markdown.py` crea una nota con frontmatter y marcas temporales.
 6. `adapters/obsidian.py` guarda la nota en la carpeta de transcripciones de la bóveda. Tras guardarla, el flujo elimina los archivos temporales y limpia la sesión.
 
@@ -16,8 +16,8 @@ Si el procesamiento se interrumpe, `status` muestra el progreso y una nueva ejec
 ## Flujo de guía
 
 1. `workflow.py` selecciona una transcripción, por defecto la más reciente.
-2. `adapters/obsidian.py` lee el cuerpo de la nota y excluye el frontmatter.
-3. `adapters/deepseek.py` envía el texto a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY` desde `.env` o el entorno, usando el modelo `deepseek-flash` y solicitando una respuesta JSON estructurada.
+2. `adapters/obsidian.py` lee el cuerpo de la nota y excluye el frontmatter. `workflow.py` vuelve a limpiar logs de Voxtype, incluso en notas creadas antes de este filtro.
+3. `adapters/deepseek.py` envía el texto limpio a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY` desde `.env` o el entorno, usando el modelo `deepseek-flash` y solicitando una respuesta JSON estructurada.
 4. `markdown.py` presenta la respuesta como una guía de estudio con enlaces a la transcripción original.
 5. `adapters/obsidian.py` guarda la guía en su propia carpeta dentro de la bóveda.
 
