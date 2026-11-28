@@ -51,7 +51,6 @@ def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, di
                 f"<transcripcion>\n{transcript}\n</transcripcion>",
             },
         ],
-        "max_tokens": 4500,
         "stream": False,
     }
     request = urllib.request.Request(
