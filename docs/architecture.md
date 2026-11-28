@@ -17,9 +17,10 @@ Si el procesamiento se interrumpe, `status` muestra el progreso y una nueva ejec
 
 1. `workflow.py` selecciona una transcripción, por defecto la más reciente.
 2. `adapters/obsidian.py` lee el cuerpo de la nota y excluye el frontmatter. `workflow.py` vuelve a limpiar logs de Voxtype, incluso en notas creadas antes de este filtro.
-3. `prompts.py` carga el prompt de sistema predeterminado o la personalización del usuario desde `~/.config/voxstudy/guide_prompt.md`. `adapters/deepseek.py` envía el texto limpio y ese prompt a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY`, usando el modelo `deepseek-flash` y solicitando una respuesta JSON estructurada.
-4. `markdown.py` presenta la respuesta como una guía de estudio con enlaces a la transcripción original.
-5. `adapters/obsidian.py` guarda la guía en su propia carpeta dentro de la bóveda.
+3. `application/vault_index.py` construye un índice local de la bóveda y rankea hasta 12 notas candidatas con BM25, excluyendo la transcripción fuente.
+4. `prompts.py` carga el prompt de sistema predeterminado o la personalización del usuario desde `~/.config/voxstudy/guide_prompt.md`. `adapters/deepseek.py` envía la transcripción limpia y metadatos limitados de las candidatas a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY`, usando el modelo `deepseek-flash` y solicitando JSON con estructura para guía, mapa conceptual y relaciones con la bóveda.
+5. `markdown.py` renderiza resumen por niveles, preguntas guía, desarrollo, términos, mapa conceptual Mermaid, relaciones wikilink validadas, autoevaluación plegable y tarjetas. La guía no incluye marcas de tiempo.
+6. `adapters/obsidian.py` guarda la guía en su propia carpeta dentro de la bóveda.
 
 La transcripción se mantiene local durante la captura. La generación de guía es una acción separada y comparte el texto con DeepSeek; no envía el audio.
 
@@ -45,6 +46,7 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | `ui/messages.py` | Mensajes de progreso y fin de operación enviados desde workers. |
 | `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
 | `application/library.py` | Búsqueda, lectura y apertura de notas seleccionadas. |
+| `application/vault_index.py` | Índice de solo lectura con metadatos y encabezados de las notas Markdown de la bóveda. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |
 | `models.py` | Modelos de configuración, captura y segmentos. |
 | `prompts.py` | Prompt predeterminado y persistencia del prompt personalizado por usuario. |
@@ -54,6 +56,8 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | `adapters/deepseek.py` | Petición compatible con OpenAI a DeepSeek y validación básica de la respuesta estructurada. |
 | `adapters/obsidian.py` | Lectura y escritura de notas en la bóveda. |
 | `markdown.py` | Renderizado Markdown de transcripciones y guías. |
+
+El índice de la bóveda es una consulta local de solo lectura. Recorre archivos Markdown, excluye `.obsidian`, `.trash` y `.git`, y conserva rutas relativas junto con título, aliases, etiquetas, resumen y encabezados. También guarda frecuencias de términos del cuerpo para la búsqueda local. `rank_related_notes` usa BM25 ponderado por campo para ordenar posibles notas relacionadas con una transcripción; títulos y aliases tienen más peso que las coincidencias del cuerpo. Solo se envía a DeepSeek metadatos acotados de hasta 12 candidatas, no sus cuerpos completos. Este paso no modifica archivos.
 
 ## Decisiones actuales
 

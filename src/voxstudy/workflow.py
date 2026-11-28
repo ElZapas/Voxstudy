@@ -10,6 +10,7 @@ from .adapters.audio_capture import start_capture, split_audio, stop_capture
 from .adapters.deepseek import DEFAULT_MODEL, request_guide
 from .adapters.obsidian import save_study_guide, save_transcript, select_transcript, transcript_body
 from .adapters.voxtype import clean_transcription_text, require_local_whisper, transcribe_chunk
+from .application.vault_index import build_vault_index, rank_related_notes
 from .config import (
     RECORDINGS_DIR,
     VoxStudyError,
@@ -124,12 +125,37 @@ def create_guide(
     config = load_config()
     source_note = select_transcript(config, requested_transcript)
     transcript = clean_transcription_text(transcript_body(source_note))
+    vault_index = build_vault_index(config.vault)
+    source_relative_path = source_note.relative_to(config.vault).as_posix()
+    ranked_notes = rank_related_notes(
+        transcript,
+        vault_index,
+        limit=12,
+        exclude_paths={source_relative_path},
+    )
+    related_notes: list[dict[str, object]] = [
+        {
+            "path": item.note.path,
+            "title": item.note.title,
+            "aliases": list(item.note.aliases[:8]),
+            "tags": list(item.note.tags[:8]),
+            "summary": item.note.summary[:400],
+            "headings": list(item.note.headings[:10]),
+            "matched_terms": list(item.matched_terms[:15]),
+        }
+        for item in ranked_notes
+    ]
     _report_progress(on_progress, WorkflowProgress(
         stage="guide_generation_started",
-        message=f"Enviando {len(transcript)} caracteres a {model}.",
+        message=(
+            f"Preparé {len(related_notes)} notas candidatas. "
+            f"Enviando {len(transcript)} caracteres a {model}."
+        ),
     ))
-    guide, usage = request_guide(transcript, model)
-    output = save_study_guide(config, source_note, guide, model, usage)
+    guide, usage = request_guide(transcript, model, related_notes)
+    output = save_study_guide(
+        config, source_note, guide, model, usage, related_note_candidates=related_notes
+    )
     return GuideResult(
         note_path=output,
         model=model,

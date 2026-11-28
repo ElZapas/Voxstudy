@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import re
 import unicodedata
@@ -49,9 +50,24 @@ def render_transcript(title: str, monitor: str, started_at: str, segments: list[
     )
 
 
-def render_study_guide(guide: dict, source_note: Path, model: str, usage: dict) -> str:
-    title = str(guide.get("title") or source_note.stem)
+def render_study_guide(
+    guide: dict,
+    source_note: Path,
+    model: str,
+    usage: dict,
+    allowed_related_notes: dict[str, str] | None = None,
+) -> str:
+    title = _clean_text(guide.get("title") or source_note.stem)
     source_link = f"[[{source_note.stem}]]"
+    summary_levels = guide.get("summary_levels")
+    if not isinstance(summary_levels, dict):
+        summary_levels = {}
+    one_sentence = _clean_text(summary_levels.get("one_sentence")) or _clean_text(
+        guide.get("summary")
+    )
+    paragraph = _clean_text(summary_levels.get("paragraph")) or _clean_text(
+        guide.get("summary")
+    )
     lines = [
         "---",
         "type: study-guide",
@@ -71,9 +87,26 @@ def render_study_guide(guide: dict, source_note: Path, model: str, usage: dict) 
         "",
         "## Resumen",
         "",
-        str(guide.get("summary", "")).strip(),
+        f"**En una frase:** {one_sentence}" if one_sentence else "",
+        "",
+        paragraph,
         "",
     ]
+    by_topic = summary_levels.get("by_topic", [])
+    if isinstance(by_topic, list) and by_topic:
+        lines.extend(["### Síntesis por tema", ""])
+        for item in by_topic:
+            if isinstance(item, dict):
+                topic = _clean_text(item.get("topic"))
+                summary = _clean_text(item.get("summary"))
+                if topic and summary:
+                    lines.append(f"- **{topic}:** {summary}")
+        lines.append("")
+
+    guiding_questions = _strings(guide.get("guiding_questions"))
+    if guiding_questions:
+        lines.extend(["## Preguntas guía", "", *(f"- {item}" for item in guiding_questions), ""])
+
     objectives = _strings(guide.get("learning_objectives"))
     lines.extend(["## Objetivos de aprendizaje", ""])
     if objectives:
@@ -82,79 +115,114 @@ def render_study_guide(guide: dict, source_note: Path, model: str, usage: dict) 
         lines.append("- *(Sin objetivos extraídos.)*")
     lines.append("")
 
-    lines.extend(["## Esquema del contenido", ""])
+    concept_map = _render_concept_map(guide.get("concept_map"))
+    if concept_map:
+        lines.extend(["## Mapa conceptual", "", *concept_map, ""])
+
+    lines.extend(["## Desarrollo", ""])
     outline = guide.get("outline", [])
     if isinstance(outline, list) and outline:
         for item in outline:
             if not isinstance(item, dict):
                 continue
-            moment = str(item.get("timestamp", "")).strip()
-            heading = str(item.get("heading", "Tema")).strip()
-            summary = str(item.get("summary", "")).strip()
-            when = f"[{moment}] " if moment else ""
-            lines.append(f"- {when}**{heading}** — {summary}")
+            heading = _clean_text(item.get("heading")) or "Tema"
+            summary = _clean_text(item.get("summary"))
+            lines.extend([f"### {heading}", ""])
+            if summary:
+                lines.extend([summary, ""])
+            for example in _strings(item.get("examples")):
+                lines.extend(_callout("example", "Ejemplo de la fuente", example))
+                lines.append("")
     else:
-        lines.append("- *(Sin esquema extraído.)*")
-    lines.append("")
+        lines.extend(["*(No se pudo organizar el contenido en temas.)*", ""])
 
-    lines.extend(["## Términos clave", ""])
+    ideas = guide.get("key_ideas", [])
+    lines.extend(["## Conectores de ideas", ""])
+    rendered_ideas = False
+    if isinstance(ideas, list):
+        for item in ideas:
+            if not isinstance(item, dict):
+                continue
+            idea = _clean_text(item.get("idea"))
+            explanation = _clean_text(item.get("explanation"))
+            if idea and explanation:
+                lines.extend(_callout("important", idea, explanation))
+                lines.append("")
+                rendered_ideas = True
+    if not rendered_ideas:
+        lines.extend(["*(La fuente no presenta conexiones adicionales claras.)*", ""])
+
+    lines.extend(["## Palabras clave", "", "| Término | Definición según la fuente | Importancia | Contraste |", "| --- | --- | --- | --- |"])
     terms = guide.get("key_terms", [])
     if isinstance(terms, list) and terms:
         for item in terms:
             if not isinstance(item, dict):
                 continue
-            name = str(item.get("term", "Término")).strip()
-            definition = str(item.get("definition", "")).strip()
-            importance = str(item.get("importance", "media")).strip()
-            moment = str(item.get("timestamp", "")).strip()
-            where = f" · [{moment}]" if moment else ""
-            lines.append(f"- **{name}** ({importance}){where}: {definition}")
+            name = _table_cell(item.get("term"))
+            definition = _table_cell(item.get("definition"))
+            importance = _table_cell(item.get("importance") or "media")
+            contrast = _table_cell(item.get("contrast") or "—")
+            if name:
+                lines.append(f"| **{name}** | {definition or '—'} | {importance} | {contrast} |")
     else:
-        lines.append("- *(No se extrajeron términos con suficiente sustento.)*")
+        lines.append("| — | No se extrajeron términos con suficiente sustento. | — | — |")
     lines.append("")
 
-    lines.extend(["## Ideas principales y relaciones", ""])
-    ideas = guide.get("key_ideas", [])
-    if isinstance(ideas, list) and ideas:
-        for item in ideas:
+    vault_relations = _render_vault_relations(
+        guide.get("vault_relations"), allowed_related_notes or {}
+    )
+    if vault_relations:
+        lines.extend(["## Relaciones con la bóveda", "", *vault_relations, ""])
+
+    confusions = guide.get("common_confusions", [])
+    if isinstance(confusions, list) and confusions:
+        lines.extend(["## Errores y confusiones frecuentes", ""])
+        for item in confusions:
             if not isinstance(item, dict):
                 continue
-            idea = str(item.get("idea", "Idea")).strip()
-            explanation = str(item.get("explanation", "")).strip()
-            refs = _strings(item.get("timestamps"))
-            where = f" ({', '.join(f'[{ref}]' for ref in refs)})" if refs else ""
-            lines.append(f"- **{idea}**{where}: {explanation}")
-    else:
-        lines.append("- *(Sin ideas adicionales extraídas.)*")
-    lines.append("")
+            confusion = _clean_text(item.get("confusion"))
+            clarification = _clean_text(item.get("clarification"))
+            if confusion and clarification:
+                lines.extend([f"- **{confusion}:** {clarification}"])
+        lines.append("")
 
-    lines.extend(["## Preguntas de práctica", ""])
+    lines.extend(["## Autoevaluación", ""])
     questions = guide.get("exam_questions", [])
     if isinstance(questions, list) and questions:
-        for index, item in enumerate(questions, start=1):
+        for item in questions:
             if not isinstance(item, dict):
                 continue
-            question = str(item.get("question", "")).strip()
-            answer = str(item.get("answer", "")).strip()
-            moment = str(item.get("timestamp", "")).strip()
-            where = f" (fuente: [{moment}])" if moment else ""
-            lines.extend([f"{index}. **{question}**{where}", f"   - Respuesta: {answer}"])
+            question = _clean_text(item.get("question"))
+            answer = _clean_text(item.get("answer"))
+            if question and answer:
+                lines.extend(_callout("question", question, answer))
     else:
-        lines.append("- *(Sin preguntas generadas.)*")
+        lines.append("*(No se generaron preguntas de práctica.)*")
     lines.append("")
 
-    lines.extend(["## Pasajes para revisar", ""])
+    flashcards = guide.get("flashcards", [])
+    if isinstance(flashcards, list) and flashcards:
+        lines.extend(["## Tarjetas", "", "#flashcards"])
+        for item in flashcards:
+            if not isinstance(item, dict):
+                continue
+            question = _clean_text(item.get("question"))
+            answer = _clean_text(item.get("answer"))
+            if question and answer:
+                lines.append(f"{question} :: {answer}")
+        lines.append("")
+
+    lines.extend(["## Por verificar", ""])
     review = guide.get("review_notes", [])
     if isinstance(review, list) and review:
         for item in review:
             if not isinstance(item, dict):
                 continue
-            issue = str(item.get("issue", "")).strip()
-            moment = str(item.get("timestamp", "")).strip()
-            when = f"[{moment}] " if moment else ""
-            lines.append(f"- {when}{issue}")
+            issue = _clean_text(item.get("issue"))
+            if issue:
+                lines.extend(_callout("warning", "Revisar transcripción", issue))
     else:
-        lines.append("- *(No se señalaron pasajes dudosos.)*")
+        lines.append("*(No se señalaron dudas importantes.)*")
     lines.extend([
         "",
         "---",
@@ -163,6 +231,104 @@ def render_study_guide(guide: dict, source_note: Path, model: str, usage: dict) 
         "",
     ])
     return "\n".join(lines)
+
+
+def _render_concept_map(value: object) -> list[str]:
+    if not isinstance(value, dict):
+        return []
+    raw_nodes = value.get("nodes", [])
+    raw_edges = value.get("edges", [])
+    if not isinstance(raw_nodes, list) or not isinstance(raw_edges, list):
+        return []
+
+    nodes: dict[str, str] = {}
+    for item in raw_nodes[:12]:
+        if not isinstance(item, dict):
+            continue
+        identifier = str(item.get("id", ""))
+        label = _clean_text(item.get("label"))
+        if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", identifier) and label:
+            nodes[identifier] = _mermaid_text(label)
+
+    edges: list[tuple[str, str, str, str]] = []
+    for item in raw_edges:
+        if not isinstance(item, dict):
+            continue
+        source = str(item.get("source", ""))
+        target = str(item.get("target", ""))
+        relation = _clean_text(item.get("relation"))
+        explanation = _clean_text(item.get("explanation"))
+        if source in nodes and target in nodes and source != target:
+            edges.append((source, target, _mermaid_text(relation), explanation))
+    if not nodes or not edges:
+        return []
+
+    lines = ["```mermaid", "flowchart TD"]
+    lines.extend(f'    {identifier}["{label}"]' for identifier, label in nodes.items())
+    lines.extend(
+        f'    {source} -->|"{relation}"| {target}' if relation
+        else f"    {source} --> {target}"
+        for source, target, relation, _ in edges
+    )
+    lines.append("```")
+    explanations = [
+        f"- **{nodes[source]} — {relation} → {nodes[target]}:** {explanation}"
+        for source, target, relation, explanation in edges
+        if explanation
+    ]
+    if explanations:
+        lines.extend(["", *explanations])
+    return lines
+
+
+def _render_vault_relations(value: object, allowed_notes: dict[str, str]) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    lines: list[str] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        raw_path = item.get("path")
+        if not isinstance(raw_path, str) or raw_path not in allowed_notes:
+            continue
+        note_path = Path(raw_path)
+        if note_path.is_absolute() or ".." in note_path.parts or note_path.suffix.lower() != ".md":
+            continue
+        if any(char in raw_path for char in "|[]#"):
+            continue
+        title = _clean_text(allowed_notes[raw_path])
+        relation = _clean_text(item.get("relation"))
+        explanation = _clean_text(item.get("explanation"))
+        if not title or not explanation:
+            continue
+        target = note_path.with_suffix("").as_posix()
+        link = f"[[{target}|{_wiki_alias(title)}]]"
+        relation_text = f" — {relation}" if relation else ""
+        lines.append(f"- {link}{relation_text}: {explanation}")
+    return lines
+
+
+def _callout(kind: str, title: str, body: str) -> list[str]:
+    lines = [f"> [!{kind}]- {title}" if kind == "question" else f"> [!{kind}] {title}"]
+    lines.extend(f"> {line}" if line else ">" for line in body.splitlines())
+    return lines
+
+
+def _clean_text(value: object) -> str:
+    return re.sub(r"\s+", " ", value.strip()) if isinstance(value, str) else ""
+
+
+def _table_cell(value: object) -> str:
+    return _clean_text(value).replace("|", r"\|")
+
+
+def _mermaid_text(value: str) -> str:
+    escaped = html.escape(value.replace("`", "'"), quote=True)
+    return escaped.replace("|", "&#124;")
+
+
+def _wiki_alias(value: str) -> str:
+    return value.replace("|", "&#124;").replace("[", "&#91;").replace("]", "&#93;")
 
 
 def _strings(value: object) -> list[str]:

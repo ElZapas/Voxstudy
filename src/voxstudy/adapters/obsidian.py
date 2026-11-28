@@ -128,11 +128,43 @@ def save_study_guide(
     guide: dict,
     model: str,
     usage: dict,
+    related_note_candidates: list[dict[str, object]] | None = None,
 ) -> Path:
     folder = config.vault / config.guide_folder
     folder.mkdir(parents=True, exist_ok=True)
     title = str(guide.get("title") or source_note.stem)
     filename = f"{source_note.stem}-guia-{slugify(title)}.md"
     path = _unique_path(folder, filename)
-    path.write_text(render_study_guide(guide, source_note, model, usage), encoding="utf-8")
+    allowed_related_notes = _validate_related_candidates(config, related_note_candidates or [])
+    path.write_text(
+        render_study_guide(guide, source_note, model, usage, allowed_related_notes),
+        encoding="utf-8",
+    )
     return path
+
+
+def _validate_related_candidates(
+    config: AppConfig,
+    candidates: list[dict[str, object]],
+) -> dict[str, str]:
+    """Keep only exact candidate paths that still resolve to notes in the vault."""
+    vault = config.vault.resolve()
+    validated: dict[str, str] = {}
+    for candidate in candidates:
+        raw_path = candidate.get("path")
+        title = candidate.get("title")
+        if not isinstance(raw_path, str) or not isinstance(title, str) or not title.strip():
+            continue
+        relative = Path(raw_path)
+        if relative.is_absolute() or ".." in relative.parts or relative.suffix.lower() != ".md":
+            continue
+        if any(char in raw_path for char in "|[]#"):
+            continue
+        try:
+            resolved = (vault / relative).resolve(strict=True)
+            resolved.relative_to(vault)
+        except (OSError, ValueError):
+            continue
+        if resolved.is_file():
+            validated[relative.as_posix()] = title.strip()
+    return validated
