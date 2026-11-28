@@ -1,9 +1,13 @@
 """Textual application shell and screen routing."""
 
+from pathlib import Path
+
 from textual.app import App
 
+from ..config import DEFAULT_VAULT, VoxStudyError, load_config
 from .screens.dashboard import DashboardScreen
 from .screens.library import LibraryScreen
+from .screens.vault_picker import VaultPickerScreen
 from .theme import AETHER_THEME
 
 
@@ -12,7 +16,11 @@ class VoxStudyApp(App[None]):
 
     TITLE = "VoxStudy"
     AUTO_FOCUS = None
-    SCREENS = {"dashboard": DashboardScreen, "library": LibraryScreen}
+    SCREENS = {
+        "dashboard": DashboardScreen,
+        "library": LibraryScreen,
+        "vault-picker": VaultPickerScreen,
+    }
 
     CSS = """
     Screen {
@@ -104,6 +112,16 @@ class VoxStudyApp(App[None]):
             return
         await self.show_dashboard()
         await self.push_screen("library")
+
+    async def show_vault_picker(self) -> None:
+        try:
+            current_vault = load_config().vault
+        except VoxStudyError:
+            current_vault = DEFAULT_VAULT if DEFAULT_VAULT.is_dir() else Path.home()
+        picker = self.get_screen("vault-picker")
+        assert isinstance(picker, VaultPickerScreen)
+        picker.set_current_vault(current_vault)
+        await self.push_screen("vault-picker")
 
     def refresh_current_screen(self) -> bool:
         refresh = getattr(self.screen, "refresh_view", None)

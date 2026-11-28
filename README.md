@@ -25,10 +25,10 @@ python -m pip install -e .
 Configura la bóveda:
 
 ```bash
-voxstudy setup --vault /home/greep/Documents/Obsidian/MDY
+voxstudy setup --vault "/ruta/a/tu/boveda"
 ```
 
-La configuración local queda en `~/.config/voxstudy/config.json`. De forma predeterminada, las transcripciones se guardan en `Transcripciones/` y las guías en `Guías de estudio/`.
+También puedes abrir `voxstudy` y pulsar `b` en el panel para elegir una bóveda navegando carpetas o escribiendo una ruta. VoxStudy conserva la bóveda configurada hasta que elijas otra. La ruta predeterminada de esta instalación es `/home/greep/Documents/Obsidian/MDY`; cada usuario puede establecer la suya. La configuración local queda en `~/.config/voxstudy/config.json`. De forma predeterminada, las transcripciones se guardan en `Transcripciones/` y las guías en `Guías de estudio/`.
 
 ## Interfaz de terminal
 
@@ -44,6 +44,7 @@ La barra superior permite volver al panel, abrir la biblioteca, actualizar la vi
 
 | Tecla | Acción |
 | --- | --- |
+| `b` | Elegir la carpeta de la bóveda desde el panel. |
 | `l` | Abrir la biblioteca desde el panel. |
 | `r` | Actualizar el panel. |
 | `g` | Generar una guía desde una transcripción. |

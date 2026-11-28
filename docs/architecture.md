@@ -27,7 +27,7 @@ La transcripción se mantiene local durante la captura. La generación de guía 
 
 Las operaciones síncronas de captura, transcripción y generación de guías se ejecutan en workers de hilo de Textual para que la interfaz permanezca receptiva. Los callbacks de `workflow.py` publican mensajes de progreso; los widgets se actualizan en el hilo principal. Al terminar, la pantalla muestra el resultado o el error y actualiza su estado.
 
-`ui/widgets/navbar.py` proporciona la barra de marca y navegación compartida por el panel, la biblioteca y las vistas de nota. `ui/app.py` coordina el cambio de pantallas y la acción de actualizar la vista actual. Las pantallas consumen las consultas de `application/` y no acceden directamente a la bóveda.
+`ui/widgets/navbar.py` proporciona la barra de marca y navegación compartida por el panel, la biblioteca y las vistas de nota. `ui/app.py` coordina el cambio de pantallas y la acción de actualizar la vista actual. `ui/screens/vault_picker.py` permite elegir la carpeta de bóveda con el árbol de directorios de Textual o introducir una ruta directamente. El selector se mantiene registrado para conservar el árbol y su posición entre aperturas; recupera el foco del árbol al mostrarse. El cambio se guarda en la configuración del usuario y conserva las carpetas de transcripciones y guías. Las pantallas consumen las consultas de `application/` y no acceden directamente a la bóveda.
 
 ## Módulos
 
@@ -40,6 +40,7 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | `ui/screens/dashboard.py` | Estado de la bóveda y captura, más notas recientes. |
 | `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
 | `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |
+| `ui/screens/vault_picker.py` | Navegación y selección de la carpeta de bóveda. |
 | `ui/messages.py` | Mensajes de progreso y fin de operación enviados desde workers. |
 | `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
 | `application/library.py` | Búsqueda, lectura y apertura de notas seleccionadas. |

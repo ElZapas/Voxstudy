@@ -14,6 +14,7 @@ from .config import (
     RECORDINGS_DIR,
     VoxStudyError,
     clear_session,
+    change_vault_config,
     load_config,
     load_session,
     save_session,
@@ -35,6 +36,11 @@ ProgressCallback = Callable[[WorkflowProgress], None]
 def setup(vault: str, transcript_folder: str, guide_folder: str) -> AppConfig:
     """Persist configuration and return the effective paths."""
     return setup_config(vault, transcript_folder, guide_folder)
+
+
+def change_vault(vault: str) -> AppConfig:
+    """Switch the configured Obsidian vault without changing folder names."""
+    return change_vault_config(vault)
 
 
 def start(title: str) -> CaptureSession:

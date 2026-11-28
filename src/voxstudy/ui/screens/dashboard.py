@@ -21,6 +21,7 @@ class DashboardScreen(Screen[None]):
     """Show setup/capture status and the latest Obsidian notes."""
 
     BINDINGS = [
+        Binding("b", "choose_vault", "Elegir bóveda", show=True),
         Binding("l", "library", "Biblioteca", show=True),
         Binding("r", "refresh", "Actualizar", show=True),
         Binding("q", "quit", "Salir", show=True),
@@ -177,6 +178,9 @@ class DashboardScreen(Screen[None]):
 
     async def action_library(self) -> None:
         await self.app.show_library()
+
+    async def action_choose_vault(self) -> None:
+        await self.app.show_vault_picker()
 
     def action_quit(self) -> None:
         self.app.exit()

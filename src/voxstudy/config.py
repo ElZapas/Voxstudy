@@ -65,6 +65,22 @@ def setup_config(vault_value: str, transcript_folder_value: str, guide_folder_va
     return AppConfig(vault, transcript_folder, guide_folder)
 
 
+def change_vault_config(vault_value: str) -> AppConfig:
+    """Change the vault while preserving the user's note-folder preferences."""
+    try:
+        value = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        value = {}
+    except json.JSONDecodeError as exc:
+        raise VoxStudyError(f"La configuración no contiene JSON válido: {CONFIG_PATH}") from exc
+
+    return setup_config(
+        vault_value,
+        value.get("folder", DEFAULT_TRANSCRIPT_FOLDER),
+        value.get("guide_folder", DEFAULT_GUIDE_FOLDER),
+    )
+
+
 def load_session() -> CaptureSession | None:
     try:
         value = json.loads(STATE_PATH.read_text(encoding="utf-8"))
