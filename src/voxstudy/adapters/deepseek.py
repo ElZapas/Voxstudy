@@ -10,28 +10,11 @@ import urllib.request
 from dotenv import load_dotenv
 
 from ..config import VoxStudyError
+from ..prompts import load_guide_system_prompt
 
 
 API_URL = "https://api.deepseek.com/chat/completions"
 DEFAULT_MODEL = "deepseek-flash"
-
-SYSTEM_PROMPT = """Eres un asistente que convierte transcripciones en guías de estudio fieles a la fuente.
-La transcripción puede contener errores de reconocimiento de voz: no conviertas una palabra dudosa en un hecho seguro. No añadas información externa ni inventes definiciones. Si algo no se entiende, indícalo en `review_notes` con su marca temporal.
-Prioriza conceptos, términos y relaciones que podrían ser evaluados, pero preséntalos como temas importantes del contenido, nunca como predicciones seguras de un examen.
-Conserva marcas de tiempo existentes en las referencias. Si no hay una marca para un dato, usa una cadena vacía.
-Responde solo con un objeto JSON válido, usando exactamente esta estructura:
-{
-  "title": "título breve",
-  "summary": "resumen de 2 a 4 frases",
-  "learning_objectives": ["objetivo verificable"],
-  "outline": [{"timestamp": "00:00:00", "heading": "tema", "summary": "qué explica la fuente"}],
-  "key_terms": [{"term": "término", "definition": "definición según la fuente", "importance": "alta|media", "timestamp": "00:00:00"}],
-  "key_ideas": [{"idea": "idea", "explanation": "explicación y relación con otras ideas", "timestamps": ["00:00:00"]}],
-  "exam_questions": [{"question": "pregunta de práctica", "answer": "respuesta apoyada por la fuente", "timestamp": "00:00:00"}],
-  "review_notes": [{"issue": "fragmento dudoso o insuficientemente explicado", "timestamp": "00:00:00"}]
-}
-Usa listas vacías cuando una sección no tenga elementos sustentados. Escribe en español."""
-
 
 def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, dict]:
     load_dotenv()
@@ -43,7 +26,7 @@ def request_guide(transcript: str, model: str = DEFAULT_MODEL) -> tuple[dict, di
     body = {
         "model": model,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": load_guide_system_prompt()},
             {
                 "role": "user",
                 "content": "Crea la guía de estudio a partir de esta transcripción. Devuelve JSON. "

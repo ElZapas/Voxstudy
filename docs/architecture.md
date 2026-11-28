@@ -17,7 +17,7 @@ Si el procesamiento se interrumpe, `status` muestra el progreso y una nueva ejec
 
 1. `workflow.py` selecciona una transcripción, por defecto la más reciente.
 2. `adapters/obsidian.py` lee el cuerpo de la nota y excluye el frontmatter. `workflow.py` vuelve a limpiar logs de Voxtype, incluso en notas creadas antes de este filtro.
-3. `adapters/deepseek.py` envía el texto limpio a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY` desde `.env` o el entorno, usando el modelo `deepseek-flash` y solicitando una respuesta JSON estructurada.
+3. `prompts.py` carga el prompt de sistema predeterminado o la personalización del usuario desde `~/.config/voxstudy/guide_prompt.md`. `adapters/deepseek.py` envía el texto limpio y ese prompt a la API oficial de DeepSeek (`https://api.deepseek.com/chat/completions`) con `DEEPSEEK_API_KEY`, usando el modelo `deepseek-flash` y solicitando una respuesta JSON estructurada.
 4. `markdown.py` presenta la respuesta como una guía de estudio con enlaces a la transcripción original.
 5. `adapters/obsidian.py` guarda la guía en su propia carpeta dentro de la bóveda.
 
@@ -41,11 +41,13 @@ Las operaciones síncronas de captura, transcripción y generación de guías se
 | `ui/screens/library.py` | Búsqueda de transcripciones y guías, con selección por teclado. |
 | `ui/screens/transcript.py` y `ui/screens/study_guide.py` | Vista de nota y acción para abrirla en Obsidian. |
 | `ui/screens/vault_picker.py` | Navegación y selección de la carpeta de bóveda. |
+| `ui/screens/prompt_settings.py` | Edición, guardado y restauración del prompt de sistema de las guías. |
 | `ui/messages.py` | Mensajes de progreso y fin de operación enviados desde workers. |
 | `application/dashboard.py` | Consulta que reúne datos para el panel sin depender de Textual. |
 | `application/library.py` | Búsqueda, lectura y apertura de notas seleccionadas. |
 | `config.py` | Rutas de configuración, bóveda, sesión y estado local. |
 | `models.py` | Modelos de configuración, captura y segmentos. |
+| `prompts.py` | Prompt predeterminado y persistencia del prompt personalizado por usuario. |
 | `workflow.py` | Coordinación de casos de uso. |
 | `adapters/audio_capture.py` | Monitor de audio, FFmpeg y división en bloques. |
 | `adapters/voxtype.py` | Comprobación e invocación de Voxtype local. |

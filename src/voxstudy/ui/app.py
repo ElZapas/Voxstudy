@@ -3,10 +3,12 @@
 from pathlib import Path
 
 from textual.app import App
+from textual.binding import Binding
 
 from ..config import DEFAULT_VAULT, VoxStudyError, load_config
 from .screens.dashboard import DashboardScreen
 from .screens.library import LibraryScreen
+from .screens.prompt_settings import PromptSettingsScreen
 from .screens.vault_picker import VaultPickerScreen
 from .theme import AETHER_THEME
 
@@ -16,6 +18,9 @@ class VoxStudyApp(App[None]):
 
     TITLE = "VoxStudy"
     AUTO_FOCUS = None
+    BINDINGS = [
+        Binding("ctrl+shift+p", "prompt_settings", "Editar prompt", show=True),
+    ]
     SCREENS = {
         "dashboard": DashboardScreen,
         "library": LibraryScreen,
@@ -43,14 +48,14 @@ class VoxStudyApp(App[None]):
     }
 
     #brand-wave {
-        width: 8;
+        width: 6;
         color: $secondary;
         text-style: bold;
         content-align: center middle;
     }
 
     #brand-name {
-        width: 10;
+        width: 9;
         color: $accent;
         text-style: bold;
         content-align: left middle;
@@ -84,9 +89,10 @@ class VoxStudyApp(App[None]):
         content-align: center middle;
     }
 
-    #nav-library { width: 14; }
-    #nav-refresh { width: 13; }
-    #nav-quit { width: 8; }
+    #nav-library { width: 9; }
+    #nav-prompts { width: 10; color: $secondary; }
+    #nav-refresh { width: 8; }
+    #nav-quit { width: 9; }
     """
 
     async def on_mount(self) -> None:
@@ -122,6 +128,14 @@ class VoxStudyApp(App[None]):
         assert isinstance(picker, VaultPickerScreen)
         picker.set_current_vault(current_vault)
         await self.push_screen("vault-picker")
+
+    async def show_prompt_settings(self) -> None:
+        if isinstance(self.screen, PromptSettingsScreen):
+            return
+        await self.push_screen(PromptSettingsScreen())
+
+    async def action_prompt_settings(self) -> None:
+        await self.show_prompt_settings()
 
     def refresh_current_screen(self) -> bool:
         refresh = getattr(self.screen, "refresh_view", None)

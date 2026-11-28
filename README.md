@@ -30,6 +30,8 @@ voxstudy setup --vault "/ruta/a/tu/boveda"
 
 También puedes abrir `voxstudy` y pulsar `b` en el panel para elegir una bóveda navegando carpetas o escribiendo una ruta. VoxStudy conserva la bóveda configurada hasta que elijas otra. La ruta predeterminada de esta instalación es `/home/greep/Documents/Obsidian/MDY`; cada usuario puede establecer la suya. La configuración local queda en `~/.config/voxstudy/config.json`. De forma predeterminada, las transcripciones se guardan en `Transcripciones/` y las guías en `Guías de estudio/`.
 
+Desde **✎ Prompt** en la barra superior puedes personalizar el prompt de sistema de las guías. Se guarda en `~/.config/voxstudy/guide_prompt.md` y se aplica a las próximas guías. **Restaurar predeterminado** elimina la personalización y vuelve al prompt incluido en VoxStudy.
+
 ## Interfaz de terminal
 
 Ejecuta `voxstudy` sin argumentos para abrir la interfaz interactiva (TUI) en la terminal. La barra superior de VoxStudy está disponible en el panel, la biblioteca y las vistas de notas. El tema predeterminado usa la paleta Aether/Omarchy.

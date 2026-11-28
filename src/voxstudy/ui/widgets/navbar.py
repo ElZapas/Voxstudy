@@ -17,11 +17,13 @@ class AppNavbar(Horizontal):
     def compose(self) -> ComposeResult:
         yield Static(r"_/\/\_", id="brand-wave")
         yield Static("VOXSTUDY", id="brand-name")
-        yield Button("⌂  Panel", id="nav-home", disabled=self.active_page == "dashboard")
+        yield Button("⌂ Panel", id="nav-home", disabled=self.active_page == "dashboard")
         yield Static("│", classes="nav-separator")
-        yield Button("▤ Biblioteca", id="nav-library", disabled=self.active_page == "library")
+        yield Button("▤ Notas", id="nav-library", disabled=self.active_page == "library")
         yield Static("│", classes="nav-separator")
-        yield Button("↻ Actualizar", id="nav-refresh")
+        yield Button("✎ Prompt", id="nav-prompts", disabled=self.active_page == "prompts")
+        yield Static("│", classes="nav-separator")
+        yield Button("↻ Act.", id="nav-refresh")
         yield Static("│", classes="nav-separator")
         yield Button("× Salir", id="nav-quit")
 
@@ -31,6 +33,8 @@ class AppNavbar(Horizontal):
             await self.app.show_dashboard()
         elif event.button.id == "nav-library":
             await self.app.show_library()
+        elif event.button.id == "nav-prompts":
+            await self.app.show_prompt_settings()
         elif event.button.id == "nav-refresh":
             if self.app.refresh_current_screen():
                 self.app.notify("Vista actualizada", timeout=2)
