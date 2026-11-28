@@ -27,14 +27,14 @@ class AppNavbar(Horizontal):
         yield Static("│", classes="nav-separator")
         yield Button("× Salir", id="nav-quit")
 
-    async def on_button_pressed(self, event: Button.Pressed) -> None:
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.id == "nav-home":
-            await self.app.show_dashboard()
+            self.app.show_dashboard()
         elif event.button.id == "nav-library":
-            await self.app.show_library()
+            self.app.show_library()
         elif event.button.id == "nav-prompts":
-            await self.app.show_prompt_settings()
+            self.app.show_prompt_settings()
         elif event.button.id == "nav-refresh":
             if self.app.refresh_current_screen():
                 self.app.notify("Vista actualizada", timeout=2)

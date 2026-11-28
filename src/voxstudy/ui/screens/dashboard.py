@@ -177,7 +177,7 @@ class DashboardScreen(Screen[None]):
         self.refresh_data()
 
     async def action_library(self) -> None:
-        await self.app.show_library()
+        self.app.show_library()
 
     async def action_choose_vault(self) -> None:
         await self.app.show_vault_picker()

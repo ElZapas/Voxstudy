@@ -101,7 +101,7 @@ class LibraryScreen(Screen[None]):
         await self.app.push_screen(screen_type(note.path))
 
     async def action_back(self) -> None:
-        await self.app.pop_screen()
+        self.app.show_dashboard()
 
     def refresh_notes(self, query: str = "") -> None:
         table = self.query_one("#library-notes", DataTable)

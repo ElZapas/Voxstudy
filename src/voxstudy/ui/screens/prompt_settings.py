@@ -102,7 +102,7 @@ class PromptSettingsScreen(Screen[None]):
         elif event.button.id == "reset-prompt":
             self.action_reset()
         elif event.button.id == "cancel-prompt":
-            await self.action_cancel()
+            self.action_cancel()
 
     def action_save(self) -> None:
         prompt = self.query_one("#guide-prompt-editor", TextArea).text
@@ -125,5 +125,5 @@ class PromptSettingsScreen(Screen[None]):
         self.query_one("#prompt-settings-status", Static).update("Usando el prompt predeterminado.")
         self.notify("Prompt predeterminado restaurado", timeout=3)
 
-    async def action_cancel(self) -> None:
-        await self.app.pop_screen()
+    def action_cancel(self) -> None:
+        self.app.return_from_prompt_settings()

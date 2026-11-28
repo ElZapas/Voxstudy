@@ -99,25 +99,18 @@ class VoxStudyApp(App[None]):
         self.register_theme(AETHER_THEME)
         self.theme = AETHER_THEME.name
         await self.push_screen("dashboard")
+        self._prompt_return_screen = "dashboard"
 
     def get_theme_variable_defaults(self) -> dict[str, str]:
         return {"muted": "#67696f"}
 
-    async def show_dashboard(self) -> None:
-        while len(self.screen_stack) > 1 and not isinstance(self.screen, DashboardScreen):
-            await self.pop_screen()
+    def show_dashboard(self) -> None:
         if not isinstance(self.screen, DashboardScreen):
-            await self.push_screen("dashboard")
+            self.switch_screen("dashboard")
 
-    async def show_library(self) -> None:
-        if isinstance(self.screen, LibraryScreen):
-            return
-        if any(isinstance(screen, LibraryScreen) for screen in self.screen_stack):
-            while not isinstance(self.screen, LibraryScreen):
-                await self.pop_screen()
-            return
-        await self.show_dashboard()
-        await self.push_screen("library")
+    def show_library(self) -> None:
+        if not isinstance(self.screen, LibraryScreen):
+            self.switch_screen("library")
 
     async def show_vault_picker(self) -> None:
         try:
@@ -129,13 +122,19 @@ class VoxStudyApp(App[None]):
         picker.set_current_vault(current_vault)
         await self.push_screen("vault-picker")
 
-    async def show_prompt_settings(self) -> None:
+    def show_prompt_settings(self) -> None:
         if isinstance(self.screen, PromptSettingsScreen):
             return
-        await self.push_screen(PromptSettingsScreen())
+        self._prompt_return_screen = (
+            "library" if isinstance(self.screen, LibraryScreen) else "dashboard"
+        )
+        self.switch_screen(PromptSettingsScreen())
 
-    async def action_prompt_settings(self) -> None:
-        await self.show_prompt_settings()
+    def return_from_prompt_settings(self) -> None:
+        self.switch_screen(self._prompt_return_screen)
+
+    def action_prompt_settings(self) -> None:
+        self.show_prompt_settings()
 
     def refresh_current_screen(self) -> bool:
         refresh = getattr(self.screen, "refresh_view", None)
